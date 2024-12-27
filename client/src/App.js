@@ -4,6 +4,7 @@ function App() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [socket, setSocket] = useState(null);
+    const [room, setRoom] = useState('');
 
     useEffect(() => {
         // Connect to the WebSocket server
@@ -28,9 +29,17 @@ function App() {
         return () => ws.close();
     }, []);
 
+    const joinRoom = () => {
+        if(socket && room){
+            const joinMessage = JSON.stringify({type: 'join', room});
+            socket.send(joinMessage);
+        }
+    }
+
     const sendMessage = () => {
         if (socket && input) {
-            socket.send(input);
+            const chatMessage = JSON.stringify({type: 'message', text:input})
+            socket.send(chatMessage);
             setInput('');
         }
     };
@@ -38,12 +47,24 @@ function App() {
     return (
         <div>
             <h1>WebSocket Client</h1>
-            <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-            />
-            <button onClick={sendMessage}>Send</button>
+            <div>
+                <input
+                    type="text"
+                    placeholder="Enter room name"
+                    value={room}
+                    onChange={(e) => setRoom(e.target.value)}
+                />
+                <button onClick={joinRoom}>Join Room</button>
+            </div>
+            <div>
+                <input
+                    type="text"
+                    placeholder="Enter message"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                />
+                <button onClick={sendMessage}>Send</button>
+            </div>
             <h2>Messages:</h2>
             <ul>
                 {messages.map((msg, index) => (
